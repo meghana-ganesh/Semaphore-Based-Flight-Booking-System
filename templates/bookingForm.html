@@ -18,7 +18,8 @@
 <body class="default">
   <div class="container px-4 px-lg-5">
     <input type="button" value="Book Flights" id="bookFlights" class="btn btn-primary d-flex float-start px-4"></input>
-    <input type="button" value="Manage Flights" id="viewBooked" class="btn btn-primary d-flex float-start px-4 mx-2"></input>
+    <input type="button" value="Manage Flights" id="viewBooked"
+      class="btn btn-primary d-flex float-start px-4 mx-2"></input>
     <span class="d-flex float-end h3 text-white-50 text-uppercase">{{userName}}</span><br>
     <br>
     <span class="d-flex float-end h3 text-white-50 ">{{rating}}</span>
@@ -32,16 +33,18 @@
         {% for flight in flights %}
         <div class="row">
           <div class="col">
-              <div class="card bg-dark">
-                <div class="card-body text-white-50">
-                  <img src="{{ url_for('static', filename='' + flights[flight]['image'] + '') }}" width="150px" alt="{{flight}}" class="card-title d-flex">
-                  <span class="card-text d-flex float-start h3">{{flights[flight]['dep']}}</span>
-                  <span class="card-text d-flex float-end h3">{{flights[flight]['arr']}}</span>
-                  <span class="card-text d-flex justify-content-center py-1 h4">{{flights[flight]['time']}}</span>
-                  <input type="button" value="Book" class="bookButton btn btn-primary d-flex float-end" data-flight="{{flight}}"></input>
-                  <span class="card-text d-flex h5 float-end px-4 py-3">Rs.{{flights[flight]['mrp1']}}</span>
-                </div>
+            <div class="card bg-dark">
+              <div class="card-body text-white-50">
+                <img src="{{ url_for('static', filename='' + flights[flight]['image'] + '') }}" width="150px"
+                  alt="{{flight}}" class="card-title d-flex">
+                <span class="card-text d-flex float-start h3">{{flights[flight]['dep']}}</span>
+                <span class="card-text d-flex float-end h3">{{flights[flight]['arr']}}</span>
+                <span class="card-text d-flex justify-content-center py-1 h4">{{flights[flight]['time']}}</span>
+                <input type="button" value="Book" class="bookButton btn btn-primary d-flex float-end"
+                  data-flight="{{flight}}"></input>
+                <span class="card-text d-flex h5 float-end px-4 py-3">Rs.{{flights[flight]['mrp1']}}</span>
               </div>
+            </div>
           </div>
         </div>
         <br />
@@ -49,12 +52,15 @@
       </div>
     </div>
   </div>
-  <div class="modal fade" id="bookingModal" tabindex="-1" role="dialog" aria-labelledby="bookingModalLabel" aria-hidden="true">
+  <div class="modal fade" id="bookingModal" tabindex="-1" role="dialog" aria-labelledby="bookingModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="bookingModalLabel">Status</h5>
-          <button type="button" class="close" onclick="modal1.toggle(); openSurvey ? window.location.replace('http://127.0.0.1:5000/survey') : window.location.replace('http://127.0.0.1:5000/bookingForm'); openSurvey = false;" aria-label="Close">
+          <button type="button" class="close"
+            onclick="modal1.toggle(); openSurvey ? window.location.replace('http://127.0.0.1:5000/survey') : window.location.replace('http://127.0.0.1:5000/bookingForm'); openSurvey = false;"
+            aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
@@ -72,17 +78,17 @@
     var modal1 = new bootstrap.Modal(document.getElementById('bookingModal'))
     let openSurvey = false;
     bookButtons.forEach(function (button) {
-  button.addEventListener('click', function () {
-    var data = this.getAttribute('data-flight');
-    console.log(data);
-    fetch('http://127.0.0.1:5000/bookingConfirm',{
+      button.addEventListener('click', function () {
+        var data = this.getAttribute('data-flight');
+        console.log(data);
+        fetch('http://127.0.0.1:5000/bookingConfirm', {
           method: "POST",
           headers: {
             "Content-type": "application/json",
           },
           body: JSON.stringify(data)
         }).then(async function (response) {
-          if(response.ok){
+          if (response.ok) {
             await response.json().then(function (data) {
               modalBody.innerHTML = data.modalMessage;
               openSurvey = data.openSurvey;
