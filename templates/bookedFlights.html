@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>MIT AIR</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='assets/MITAIR.ico') }}" />
+    <link href="https://fonts.googleapis.com/css?family=Varela+Round" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}" />
+</head>
+
+<body class="default">
+    <div class="container px-4 px-lg-5">
+        <input type="button" value="Book Flights" id="bookFlights" class="btn btn-primary d-flex float-start px-4"></input>
+        <input type="button" value="Manage Flights" id="viewBooked" class="btn btn-primary d-flex float-start px-4 mx-2"></input>
+        <span class="d-flex float-end h3 text-white-50 text-uppercase">{{userName}}</span><br>
+        <br>
+        <span class="d-flex float-end h3 text-white-50 ">{{rating}}</span>
+        <br>
+        <div>
+            <div class="text-center">
+                <h1 class="mx-auto text-uppercase text-white-50">
+                    Manage your flights
+                </h1>
+                <br />
+                {% for flight in flights %}
+                <div class="row">
+                    <div class="col">
+                            <div class="card bg-dark">
+                                <div class="card-body text-white-50">
+                                   <img src="{{ url_for('static', filename='' + flights[flight]['image'] + '') }}" width="150px" alt="{{flight}}" class="card-title d-flex">
+                                    <span class="card-text d-flex float-start h3">{{flights[flight]['dep']}}</span>
+                                    <span class="card-text d-flex float-end h3">{{flights[flight]['arr']}}</span>
+                                    <span
+                                        class="card-text d-flex justify-content-center py-1 h4">{{flights[flight]['time']}}</span>
+                                    <input type="button" value="Cancel" class="cancelButton btn btn-danger d-flex float-end" data-flight="{{flight}}"></input>
+                                    <span
+                                        class="card-text d-flex h5 float-end px-4 py-3">Rs.{{flights[flight]['mrp1']}}</span>
+                                </div>
+                            </div>
+                    </div>
+                </div>
+                <br />
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="cancelModal" tabindex="-1" role="dialog" aria-labelledby="cancelModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="cancelModalLabel">Status</h5>
+              <button type="button" class="close" onclick="modal1.toggle(); openSurvey ? window.location.replace('http://127.0.0.1:5000/survey') : window.location.replace('http://127.0.0.1:5000/bookedFlights'); openSurvey = false;" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+            </div>
+          </div>
+        </div>
+      </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let openSurvey = false;
+        document.getElementById('bookFlights').addEventListener('click', () => { window.location = "http://127.0.0.1:5000/bookingForm" })
+        document.getElementById('viewBooked').addEventListener('click', () => { window.location = "http://127.0.0.1:5000/bookedFlights" })
+        var cancelButtons = document.querySelectorAll('.cancelButton');
+        var modalBody = document.querySelector('.modal-body');
+        var modal1 = new bootstrap.Modal(document.getElementById('cancelModal'))
+        cancelButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+        var data = this.getAttribute('data-flight');
+        fetch('http://127.0.0.1:5000/cancelBooking',{
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify(data)
+        }).then(async function (response) {
+          if(response.ok){
+            await response.json().then(function (data) {
+                console.log(data);
+              modalBody.innerHTML = data.modalMessage;
+              openSurvey = data.openSurvey;
+            })
+          }
+        })
+        modal1.toggle();
+      });
+    });
+    </script>
+</body>
+
+</html>

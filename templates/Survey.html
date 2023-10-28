@@ -1,20 +1,67 @@
 <!DOCTYPE html>
-<head>
-    <h1>SOME ADDS</h1>
-    <div class="message">
-        {{ transaction_message }}
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>MIT AIR</title>
+        <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='assets/MITAIR.ico') }}" />
+        <link href="https://fonts.googleapis.com/css?family=Varela+Round" rel="stylesheet" />
+        <link
+          href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+          rel="stylesheet" />
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}" />
+      </head>
+<body class="default py-0" >
+    <header>
+        <img class="w-100" height="600px" src="{{ url_for('static', filename='assets/img/ad2.jpg') }}" alt="Ad 2">
+    <img class="float-end w-25 h-25 px-4 py-4" src="{{ url_for('static', filename='assets/img/ad1.jpg') }}" alt="Ad 1">
+    <video width="320" height="240" loop autoplay muted class="float-end">
+        <source src="{{ url_for('static', filename='assets/videos/airlineOff.mp4') }}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    </header>
+    <div>
+    <h1 class="py-4 text-white-50 px-4">Survey</h1>
+        <ul>
+            {% for question in questions %}
+                <li class="text-white-50 px-4">{{ question }}
+                    <br>
+                    <label class="px-2" for="{{ question }}-0">Not Likely</label>
+                    <input type="radio" id="{{ question }}-0" name="{{ question }}" value="Not Likely" required>
+                    <label class="px-2" for="{{ question }}-1">Neutral</label>
+                    <input type="radio" id="{{ question }}-1" name="{{ question }}" value="Neutral">
+                    <label class="px-2" for="{{ question }}-2">Very Likely</label>
+                    <input type="radio" id="{{ question }}-2" name="{{ question }}" value="Very Likely">
+                </li>
+                <br>
+            {% endfor %}
+        </ul>
+        <button type="button" value="Submit" class="surveySubmit btn btn-primary px-4 mx-2 my-2" onclick="modal1.toggle();">Submit</button>
+</div>
+<div class="modal fade" id="surveyModal" tabindex="-1" role="dialog" aria-labelledby="surveyModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="surveyModalLabel">Status</h5>
+          <button type="button" class="close" onclick="modal1.toggle(); window.location.replace('http://127.0.0.1:5000/bookingForm')" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+            Survey Submitted Successfully!
+        </div>
+      </div>
     </div>
-    <div class="message">
-        {{ rating_message }}
-    </div>
-    <div class="message">
-        {{ add_page_message }}
-    </div>
-    <div class="message">
-        {{ overhead_message }}
-    </div>
-    <div class="message">
-        {{ total_amount_message }}
-    </div>
-    
-</head>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+   <script>
+    var modal1 = new bootstrap.Modal(document.getElementById('surveyModal'))
+    var surveySubmit = document.querySelector('.surveySubmit');
+    surveySubmit.addEventListener('click', function() {
+        modal1.toggle();
+    });
+   </script> 
+</body>
+</html>
