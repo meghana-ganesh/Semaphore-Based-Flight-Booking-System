@@ -6,8 +6,10 @@ from flask import (
     session,
     jsonify,
     make_response,
+    url_for,
 )
 from flask_session import Session
+from copy import deepcopy
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 app.config["SECRET_KEY"] = "yadawdawd"
@@ -122,8 +124,6 @@ flights = {
     },
 }
 
-bookedFlights = {}
-
 survey_questions = [
     "How likely are you to cancel a booking with our airline?",
     "How likely are you to rebook with our airline?",
@@ -132,6 +132,39 @@ survey_questions = [
     "How likely are you to recommend our airline to a friend?",
     "How often do you fly with us in a year?",
 ]
+
+commonSeats = [
+    ["A1", None],
+    ["A2", None],
+    ["A3", None],
+    ["A4", None],
+    ["B1", None],
+    ["B2", None],
+    ["B3", None],
+    ["B4", None],
+    ["C1", None],
+    ["C2", None],
+    ["C3", None],
+    ["C4", None],
+    ["D1", None],
+    ["D2", None],
+    ["D3", None],
+    ["D4", None],
+    ["E1", None],
+    ["E2", None],
+    ["E3", None],
+    ["E4", None],
+    ["F1", None],
+    ["F2", None],
+    ["F3", None],
+    ["F4", None],
+]
+
+seats = {
+    "airasia": deepcopy(commonSeats),
+    "qatarair": deepcopy(commonSeats),
+    "singaair": deepcopy(commonSeats),
+}
 
 
 @app.route("/")
@@ -149,17 +182,18 @@ def validate():
                 if "userName" in session:
                     return render_template(
                         "bookingForm.html",
-                        flights=flights,
+                        flights=session["flights"],
                         userName=userName,
                         rating=session["booking_system"].x,
                     )
                 else:
                     session["userName"] = userName
                     session["flights"] = flights
+                    session["bookedFlights"] = {}
                     session["booking_system"] = BookingSystem(x=10)
                     return render_template(
                         "bookingForm.html",
-                        flights=flights,
+                        flights=session["flights"],
                         userName=userName,
                         rating=session["booking_system"].x,
                     )
@@ -174,7 +208,7 @@ def bookingForm():
     if "userName" in session:
         return render_template(
             "bookingForm.html",
-            flights=flights,
+            flights=session["flights"],
             userName=session["userName"],
             rating=session["booking_system"].x,
         )
@@ -186,22 +220,22 @@ def bookingForm():
 def bookingConfirm():
     if request.method == "POST":
         flight = request.json
-        if flight not in bookedFlights:
-            mrp1 = flights[flight]["mrp1"]
+        if flight not in session["bookedFlights"]:
+            mrp1 = session["flights"][flight]["mrp1"]
 
             booking_system = session["booking_system"]
             booking_system.booking_type = 0
 
-            if flights[flight]["rebook"] == 0:
-                flights[flight]["rebook"] = 1
+            if session["flights"][flight]["rebook"] == 0:
+                session["flights"][flight]["rebook"] = 1
             else:
                 booking_system.booking_type = 1
 
             booking_system.MRP1 = mrp1
             booking_system.handle_booking()
             total_amount = booking_system.MRP1 + booking_system.MRP2
-            bookedFlights[flight] = flights[flight].copy()
-            bookedFlights[flight]["mrp1"] = total_amount
+            session["bookedFlights"][flight] = session["flights"][flight].copy()
+            session["bookedFlights"][flight]["mrp1"] = total_amount
             booking_system.MRP2 = 0
 
             modalMessage = "<ul>"
@@ -237,10 +271,9 @@ def bookingConfirm():
 
 @app.route("/bookedFlights")
 def viewBooked():
-    print(bookedFlights)
     return render_template(
         "bookedFlights.html",
-        flights=bookedFlights,
+        flights=session["bookedFlights"],
         userName=session["userName"],
         rating=session["booking_system"].x,
     )
@@ -250,7 +283,7 @@ def viewBooked():
 def cancelBooking():
     if request.method == "POST":
         flight = request.json
-        mrp1 = bookedFlights[flight]["mrp1"]
+        mrp1 = session["bookedFlights"][flight]["mrp1"]
 
         booking_system = session["booking_system"]
         booking_system.booking_type = 2
@@ -263,7 +296,11 @@ def cancelBooking():
                 jsonify({"modalMessage": "Booking cannot be cancelled"}), 200
             )
             return response
-        del bookedFlights[flight]
+        del session["bookedFlights"][flight]
+
+        for seat in seats[flight]:
+            if seat[1] == session["userName"]:
+                seat[1] = None
 
         modalMessage = "<ul>"
         openSurvey = False
@@ -289,6 +326,36 @@ def cancelBooking():
             jsonify({"modalMessage": modalMessage, "openSurvey": openSurvey}), 200
         )
         return response
+
+
+@app.route("/seatBooking", methods=["POST", "GET"])
+def seatBooking():
+    if request.method == "POST":
+        flight = request.form["flight"]
+        return redirect(url_for("showSeats", flight=flight))
+
+
+@app.route("/showSeats/<string:flight>")
+def showSeats(flight):
+    return render_template("bookSeats.html", seats=seats[flight], flight=flight)
+
+
+@app.route("/ongoingBooking")
+def loading():
+    return render_template("ongoingBooking.html")
+
+
+@app.route("/saveSeats/<string:flight>", methods=["POST", "GET"])
+def saveSeats(flight):
+    if request.method == "POST":
+        if flight not in session["bookedFlights"]:
+            seatsBooked = request.form["seats"]
+            for seat in seats[flight]:
+                if seat[0] in seatsBooked:
+                    seat[1] = session["userName"]
+            return jsonify({"message": "Seats Booked Successfully"})
+        else:
+            return jsonify({"message": "Flight already booked"})
 
 
 @app.route("/survey")

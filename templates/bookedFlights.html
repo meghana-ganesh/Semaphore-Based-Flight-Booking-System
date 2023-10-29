@@ -59,7 +59,7 @@
         <div class="modal-header">
           <h5 class="modal-title" id="cancelModalLabel">Status</h5>
           <button type="button" class="close"
-            onclick="modal1.toggle(); openSurvey ? window.location.replace('http://127.0.0.1:5000/survey') : window.location.replace('http://127.0.0.1:5000/bookedFlights'); openSurvey = false;"
+            onclick="modal1.toggle(); openSurvey ? window.location.href = 'http://127.0.0.1:5000/survey' : window.location.href = 'http://127.0.0.1:5000/bookedFlights'; openSurvey = false;"
             aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -89,7 +89,6 @@
         }).then(async function (response) {
           if (response.ok) {
             await response.json().then(function (data) {
-              console.log(data);
               modalBody.innerHTML = data.modalMessage;
               openSurvey = data.openSurvey;
             })

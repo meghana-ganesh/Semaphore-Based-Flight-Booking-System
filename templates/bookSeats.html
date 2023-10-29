@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta name="description" content="" />
+  <meta name="author" content="" />
+  <title>MIT AIR</title>
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='assets/MITAIR.ico') }}" />
+  <link href="https://fonts.googleapis.com/css?family=Varela+Round" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet" />
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}" />
+</head>
+
+<body class="default overflow-hidden">
+  <img src="{{ url_for('static', filename='assets/img/' + flight + '.png') }}" width="150px"
+    class="position-absolute top-0 start-0 mx-4 my-2 py-4">
+  <div id="layout" class="position-absolute my-5 start-50 translate-middle">
+    {% for seat in seats %}
+    <div {% if seat[1] is none %} class="seat" onclick="reserve.toggle(this)" {% else %} class="seat taken" {% endif %}>
+      {{ seat[0] }}</div>
+    {% endfor %}
+  </div>
+  <img src="{{ url_for('static', filename='assets/img/seatmap.png') }}"
+    class="position-absolute top-50 start-50 translate-middle" style="height: 100%;">
+
+  <div id="legend" class="float-end position-absolute bottom-0 end-0 mx-2 my-2">
+    <div class="seat"></div>
+    <div class="txt text-white-50">Available</div>
+    <div class="seat taken"></div>
+    <div class="txt text-white-50">Taken</div>
+    <div class="seat selected"></div>
+    <div class="txt text-white-50">Your Chosen Seats</div>
+  </div>
+
+  <button id="save" onclick="reserve.save()" class="btn btn-primary position-absolute end-0 mx-4"
+    style="bottom: 170px;">Reserve Seats</button>
+</body>
+<script>
+  var reserve = {
+    toggle: seat => seat.classList.toggle("selected"),
+
+    save: () => {
+      let selected = document.querySelectorAll("#layout .selected");
+
+      if (selected.length == 0) { alert("No seats selected."); }
+
+      else {
+        let seats = [];
+        for (let s of selected) { seats.push(s.innerHTML); }
+
+        let data = new FormData();
+        data.append("seats", JSON.stringify(seats));
+        fetch("/saveSeats/{{flight}}", {
+          method: "POST",
+          body: data
+        }).then((response) => {
+          if (response.ok)
+            window.location.href = 'http://127.0.0.1:5000/ongoingBooking';
+        });
+      }
+    }
+  };
+</script>
+
+</html>

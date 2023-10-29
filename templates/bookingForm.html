@@ -59,7 +59,7 @@
         <div class="modal-header">
           <h5 class="modal-title" id="bookingModalLabel">Status</h5>
           <button type="button" class="close"
-            onclick="modal1.toggle(); openSurvey ? window.location.replace('http://127.0.0.1:5000/survey') : window.location.replace('http://127.0.0.1:5000/bookingForm'); openSurvey = false;"
+            onclick="modal1.toggle(); openSurvey ? window.location.href = 'http://127.0.0.1:5000/survey' : window.location.href = 'http://127.0.0.1:5000/bookingForm'; openSurvey = false;"
             aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -77,27 +77,52 @@
     var modalBody = document.querySelector('.modal-body');
     var modal1 = new bootstrap.Modal(document.getElementById('bookingModal'))
     let openSurvey = false;
+    
+    document.addEventListener('DOMContentLoaded', function () {
+      const storedState = localStorage.getItem('previousState');
+      if (storedState) {
+        const state = JSON.parse(storedState);
+
+        if (state.page === "dup") {
+          var data = state.flight;
+          fetch('http://127.0.0.1:5000/bookingConfirm', {
+            method: "POST",
+            headers: {
+              "Content-type": "application/json",
+            },
+            body: JSON.stringify(data)
+          }).then(async function (response) {
+            if (response.ok) {
+              await response.json().then(function (data) {
+                modalBody.innerHTML = data.modalMessage;
+                openSurvey = data.openSurvey;
+              })
+            }
+          })
+          modal1.toggle();
+        }
+
+        localStorage.removeItem('previousState');
+      }
+    });
+
     bookButtons.forEach(function (button) {
       button.addEventListener('click', function () {
-        var data = this.getAttribute('data-flight');
-        console.log(data);
-        fetch('http://127.0.0.1:5000/bookingConfirm', {
+        const dataFlight = this.getAttribute('data-flight');
+        localStorage.setItem('previousState', JSON.stringify({ page: "dup", flight: dataFlight }));
+        let data = new FormData();
+        data.append("flight", dataFlight);
+        fetch('http://127.0.0.1:5000/seatBooking', {
           method: "POST",
-          headers: {
-            "Content-type": "application/json",
-          },
-          body: JSON.stringify(data)
-        }).then(async function (response) {
+          body: data
+        }).then(function (response) {
           if (response.ok) {
-            await response.json().then(function (data) {
-              modalBody.innerHTML = data.modalMessage;
-              openSurvey = data.openSurvey;
-            })
+            window.location.href = response.url
           }
         })
-        modal1.toggle();
       });
     });
+
   </script>
 </body>
 
